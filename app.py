@@ -1,4 +1,5 @@
 import io
+import os
 from pathlib import Path
 
 import streamlit as st
@@ -9,7 +10,7 @@ from seeall.ocr import analyze_text_boxes
 from seeall.deterministic import to_issues
 from seeall.annotate import draw_boxes
 from seeall.scoring import compute_score, severity_breakdown, format_breakdown
-from seeall.ai import analyze_with_ai
+from seeall.ai import analyze_with_ai, provider_status_label
 from seeall.merge import ai_issues_to_schema, merge_and_rank
 from seeall.simulate import simulate, SIMULATION_KINDS
 from seeall.speech import script_to_speech
@@ -23,6 +24,23 @@ st.set_page_config(page_title="SeeAll - Accessibility Auditor", layout="wide")
 
 st.title("SeeAll")
 st.caption("AI accessibility auditor for designers")
+st.caption(provider_status_label(os.environ))
+
+with st.sidebar:
+    st.header("How SeeAll works")
+    st.markdown(
+        "1. **Measured issues** — OCR finds text, a colour-clustering "
+        "algorithm splits text vs. background colour, and exact WCAG 2.2 "
+        "contrast math flags failures.\n"
+        "2. **AI-found issues** — a vision model (NVIDIA / OpenRouter / "
+        "Gemini, with automatic fallback) spots what code can't: unclear "
+        "icons, colour-only meaning, missing labels, clutter.\n"
+        "3. **Simulations** — see the screen the way colour-blind or "
+        "low-vision users do.\n"
+        "4. **Hear this screen** — a text-to-speech readout in the order "
+        "a screen reader would announce it.\n\n"
+        "A designer always makes the final call — AI suggestions can be wrong."
+    )
 
 with st.expander("About your data & AI limitations", expanded=False):
     st.write(

@@ -108,6 +108,18 @@ def build_providers(env):
     return providers
 
 
+def provider_status_label(env):
+    """Human-readable summary of which AI providers are configured, shown
+    always (not just after an audit) for transparency."""
+    providers = build_providers(env)
+    if not providers:
+        return "No AI provider configured — will use offline mock"
+    label = f"AI provider ready: {providers[0][0]}"
+    if len(providers) > 1:
+        label += f" (+{len(providers) - 1} fallback configured)"
+    return label
+
+
 def analyze_with_ai(image, deterministic_findings):
     """Returns (AIResponse, provider_name, seconds_elapsed)."""
     providers = build_providers(os.environ)
