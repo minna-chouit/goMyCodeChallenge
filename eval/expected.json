@@ -1,0 +1,23 @@
+{
+  "grey_on_white.png": {
+    "contrast_issues": 1,
+    "small_text_issues": 0
+  },
+  "tiny_text.png": {
+    "contrast_issues": 0,
+    "small_text_issues": 1
+  },
+  "red_green_status.png": {
+    "contrast_issues": 0,
+    "small_text_issues": 0,
+    "color_only_issues": 1
+  },
+  "clean_1.png": {
+    "contrast_issues": 0,
+    "small_text_issues": 0
+  },
+  "clean_2.png": {
+    "contrast_issues": 0,
+    "small_text_issues": 0
+  }
+}
