@@ -8,7 +8,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] A0. Baseline
 - [x] A1. Fix screenshot scale
 - [x] A2. New issue data model with WCAG tags and grouping
-- [ ] A3. Fairer score
+- [x] A3. Fairer score
 - [ ] A4. Clear annotations
 - [ ] A5. Solutions everywhere
 - [ ] A6. Readable report

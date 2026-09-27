@@ -9,7 +9,7 @@ from PIL import Image
 from seeall.ocr import analyze_text_boxes
 from seeall.deterministic import to_issues
 from seeall.annotate import draw_boxes
-from seeall.scoring import compute_score, severity_breakdown, format_breakdown
+from seeall.scoring import compute_score, severity_breakdown, format_breakdown, compute_score_v2, level_counts, grade_label
 from seeall.ai import analyze_with_ai, provider_status_label
 from seeall.merge import ai_issues_to_schema, merge_and_rank
 from seeall.simulate import simulate, SIMULATION_KINDS
@@ -106,11 +106,13 @@ if image and (st.button("Audit", type="primary") or auto_run):
         ai_issues = ai_issues_to_schema(ai_response, image.size)
 
     issues = merge_and_rank(deterministic_issues, ai_issues)
-    score = compute_score(issues)
+    grouped = group_issues(issues)
+    score = compute_score_v2(grouped)
 
     st.session_state["last_result"] = {
         "image": image,
         "issues": issues,
+        "grouped": grouped,
         "score": score,
         "provider_name": provider_name,
         "elapsed": elapsed,
@@ -120,9 +122,14 @@ if image and (st.button("Audit", type="primary") or auto_run):
 
 result = st.session_state.get("last_result")
 if result:
+    grouped = result["grouped"]
     breakdown = format_breakdown(severity_breakdown(result["issues"]))
-    st.metric("Accessibility score", f"{result['score']} / 100", help=breakdown)
+    levels = level_counts(grouped)
+    level_note = ", ".join(f"Level {lvl}: {n} issue{'s' if n != 1 else ''}" for lvl, n in sorted(levels.items()))
+    st.metric("Accessibility score", f"{result['score']} / 100 — {grade_label(result['score'])}", help=breakdown)
     st.caption(breakdown)
+    if level_note:
+        st.caption(level_note)
     st.caption(f"AI provider: {result['provider_name']} ({result['elapsed']:.1f}s)")
     if result.get("fallback_note"):
         st.info(f"Fallback used: {result['fallback_note']}")
@@ -134,7 +141,6 @@ if result:
     )
 
     with tab_issues:
-        grouped = group_issues(result["issues"])
         if not grouped:
             st.success("No issues found.")
         for i, group in enumerate(grouped, start=1):

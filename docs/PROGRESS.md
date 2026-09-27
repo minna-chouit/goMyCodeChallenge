@@ -41,3 +41,25 @@ Observed AI-quality nuance (not a bug in this step): one NVIDIA finding
 was typed "alt_text" but its description is actually about contrast on
 "Return to cart" — a model mislabel that will need C1's stricter WCAG-id
 prompt to fix, not something A2's grouping can correct.
+
+## A3. Fairer score
+Added `compute_score_v2(grouped_issues)`, `level_counts()`, `grade_label()`
+to `seeall/scoring.py`: per-GROUP deduction (critical -15, serious -8,
+minor -3), +10%/extra instance capped at +50% of base, halved if the
+group is purely AI-sourced with average confidence <0.5, floored at 0.
+10 new tests pin the formula exactly (78 total, all passing).
+Wired into app.py: score/grade/level-counts now come from grouped issues,
+not the old flat per-box `compute_score`.
+Verified live on checkout.jpg (NVIDIA failed this run, fell back to
+Gemini — visibly shown, itself a nice validation of earlier reliability
+work): **score 63/100 — Needs work**, squarely in the plan's 55-70 target.
+"Level A: 1 issue, Level AA: 2 issues" shown correctly. 3 groups total
+(13 contrast, 3 missing_label, 11 small_target).
+Offline check (deterministic-only, no API call, to save quota):
+clean_1.png / clean_2.png -> 100 "Excellent" (matches >=90 target).
+grey_on_white.png -> 85 "Good" — NOT literally "low" as the plan's
+Done-when phrasing suggests, but this is a single, real, isolated
+contrast failure on an otherwise clean image; scoring it at 85 rather
+than near-0 is the intended fairness improvement, not a bug. Flagging
+this honestly rather than tuning the formula to force a lower number for
+one specific test image.
