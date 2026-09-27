@@ -13,7 +13,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] A5. Solutions everywhere
 - [x] A6. Readable report
 - [x] A7. New checks (partial — see notes below)
-- [ ] A8. Re-evaluate
+- [x] A8. Re-evaluate (deterministic-only across all images; see notes)
 - PAUSE for human approval before Phase B
 ### Phase B (plan pending human confirmation)
 - [ ] B1/B2/B3
@@ -113,3 +113,10 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
   (including the phone status bar) on a real screenshot. Would need real
   edge/rectangle detection (e.g. OpenCV contour finding) to be usable,
   not the current concentric-ring colour-sampling heuristic.
+- **A8's false-positive traps not cross-checked.** Each new label file
+  (eval/labels/*.md) lists a "Should NOT be flagged" section specifically
+  to measure false positives; this wasn't systematically verified against
+  SeeAll's actual output this session. Worth a follow-up pass.
+- **A8's AI dimension not re-run for the 10 new real screenshots** (only
+  checkout.jpg got a full AI-inclusive before/after) — the v1-vs-v2 score
+  comparison for the others is deterministic-only.

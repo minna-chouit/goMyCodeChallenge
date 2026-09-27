@@ -170,3 +170,21 @@ asterisk-legend AI catch specifically could not be confirmed live within
 the time available — flagged in docs/TASKS.md as unverified, not claimed
 as working.
 30 new tests (148 total).
+
+## A8. Re-evaluate
+The user added 10 real screenshots + rich label files (eval/labels/*.md,
+each with WCAG-tagged expected issues, false-positive traps, and an
+expected score band) while A1-A7 were in progress. Ran v1-vs-v2 scoring
+(deterministic-only, to respect the "keep API usage low" rule given A7's
+observed 1.5-6+ minute NVIDIA latency) across all 16 eval images.
+**Headline result**: 3 real screens that scored a meaningless 0/100 under
+v1 (checkout.jpg, intelly dashboard with 230 flat findings, mobile UI)
+now score 60-73 "Needs work" under v2 — every other image's score moved
+up or stayed flat, none moved down. checkout.png got the full before/after
+including a real AI call (reusing A7's live-verified result: v1=0 ->
+v2=60), satisfying the plan's specific Done-when. Full table and notes in
+eval/results.md's new "v2 re-evaluation (A8)" section.
+Cut for time: did not systematically cross-check each label's "Should NOT
+be flagged" false-positive traps, or re-run the AI dimension across all 12
+new real screenshots (both flagged as follow-ups in eval/results.md and
+docs/TASKS.md rather than silently skipped).
