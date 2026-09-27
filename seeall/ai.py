@@ -21,23 +21,15 @@ _CODE_FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 
 SYSTEM_PROMPT = (
     "You are an accessibility auditor. Given a UI screenshot, find issues a "
-    "deterministic tool cannot. Check specifically for:\n"
-    "- color_only: meaning shown by colour alone.\n"
-    "- icon_unclear: icons with no clear meaning.\n"
-    "- missing_label: missing/vague labels, OR required fields marked only with "
-    "'*' with no visible '* = required' legend, OR placeholder text used as the "
-    "only label/hint for a field (placeholders disappear once typed).\n"
-    "- small_target: tap targets under 24x24 px.\n"
-    "- layout: cluttered or confusing layout.\n"
-    "- alt_text: images needing alt text.\n"
-    "- image_of_text: text baked into an image instead of real, selectable text.\n"
-    "- error_handling: form errors shown only by colour, or with no suggestion of how to fix them.\n"
-    "- captcha_or_memory_test: a CAPTCHA or memory-based puzzle on a login/auth screen with no alternative.\n"
-    "- drag_only: an action (e.g. a slider, reorder) that can only be done by dragging, no tap/click alternative.\n"
-    "- sticky_obscures_focus: a sticky header/footer that could fully hide a focused element below it.\n"
-    "- orientation_lock: a 'rotate your device' message forcing one orientation.\n"
-    "- visual_presentation: justified text or very long lines that are hard to read.\n"
-    "- other: anything else accessibility-relevant not covered above.\n"
+    "deterministic tool cannot. Types: color_only (meaning by colour alone), "
+    "icon_unclear, missing_label (also: '*' required fields with no legend, "
+    "or placeholder used as the only label), small_target (<24x24px), "
+    "layout (clutter), alt_text, image_of_text (text baked into an image), "
+    "error_handling (errors shown only by colour or with no fix suggestion), "
+    "captcha_or_memory_test (login puzzle, no alternative), drag_only (no "
+    "tap/click alternative), sticky_obscures_focus (sticky bar hiding focus), "
+    "orientation_lock ('rotate your device'), visual_presentation (justified "
+    "text/long lines), other.\n"
     "Do not repeat the issues already listed as 'known deterministic findings' "
     "below. Respond with STRICT JSON ONLY, no markdown fences, matching exactly "
     "this schema:\n"
@@ -52,9 +44,25 @@ SYSTEM_PROMPT = (
 )
 
 
+_MAX_IMAGE_SIDE = 1280
+_AI_TIMEOUT_SECONDS = 40
+_AI_MAX_TOKENS = 1500
+
+
+def resize_for_ai(image, max_side=_MAX_IMAGE_SIDE):
+    """Downscale before sending to the vision model — smaller image, fewer
+    tokens, faster response. No-op if already within the limit."""
+    width, height = image.size
+    longest = max(width, height)
+    if longest <= max_side:
+        return image
+    scale = max_side / longest
+    return image.resize((round(width * scale), round(height * scale)))
+
+
 def _image_to_data_url(image):
     buf = io.BytesIO()
-    image.save(buf, format="PNG")
+    resize_for_ai(image).save(buf, format="PNG")
     b64 = base64.b64encode(buf.getvalue()).decode()
     return f"data:image/png;base64,{b64}"
 
@@ -90,14 +98,14 @@ def clean_json_response(raw):
 def _call_provider(base_url, api_key, model, image, deterministic_findings):
     from openai import OpenAI
 
-    client = OpenAI(base_url=base_url, api_key=api_key)
+    client = OpenAI(base_url=base_url, api_key=api_key, timeout=_AI_TIMEOUT_SECONDS, max_retries=0)
     messages = _build_messages(image, deterministic_findings)
     extra_body = {"chat_template_kwargs": {"enable_thinking": False}} if needs_thinking_disabled(model) else {}
 
     last_error = None
     for attempt in range(2):
         response = client.chat.completions.create(
-            model=model, messages=messages, temperature=0, max_tokens=2000, extra_body=extra_body,
+            model=model, messages=messages, temperature=0, max_tokens=_AI_MAX_TOKENS, extra_body=extra_body,
         )
         raw = response.choices[0].message.content
         cleaned = clean_json_response(raw)
@@ -127,6 +135,16 @@ def _mock_response(image):
         }],
         alt_texts=[],
         screen_reader_script=["MOCK - AI unavailable. This is placeholder screen reader text."],
+    )
+
+
+def _measured_only_response():
+    """Every configured provider timed out: don't show a fake mock finding,
+    just say so plainly and return no AI issues."""
+    return AIResponse(
+        issues=[],
+        alt_texts=[],
+        screen_reader_script=["AI took too long; showing measured checks only."],
     )
 
 
@@ -165,6 +183,8 @@ def provider_status_label(env):
 def short_error_reason(exc):
     """Map an exception to a short, judge-readable reason for a fallback note."""
     text = f"{type(exc).__name__} {exc}".lower()
+    if "timeout" in text or "timed out" in text:
+        return "timed out"
     if "429" in text or "rate" in text or "quota" in text:
         return "rate-limited"
     if "404" in text or "not found" in text or "not_found" in text:
@@ -209,10 +229,15 @@ def analyze_with_ai(image, deterministic_findings, env=None):
             continue
 
     start = time.time()
-    fallback_note = None
-    if failures:
-        first_name, first_reason = failures[0]
-        fallback_note = f"{first_name} {first_reason}, used offline mock"
-    outcome = (_mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note)
+    all_timed_out = bool(failures) and all(reason == "timed out" for _, reason in failures)
+    if all_timed_out:
+        fallback_note = "AI took too long; showing measured checks only"
+        outcome = (_measured_only_response(), "Measured checks only (AI timed out)", time.time() - start, fallback_note)
+    else:
+        fallback_note = None
+        if failures:
+            first_name, first_reason = failures[0]
+            fallback_note = f"{first_name} {first_reason}, used offline mock"
+        outcome = (_mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note)
     _AI_CACHE.set(cache_key, outcome)
     return outcome
