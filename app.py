@@ -22,6 +22,9 @@ from seeall.group_issues import group_issues
 from seeall.box_validation import drop_invalid_ai_boxes
 from seeall.thumbnail import crop_thumbnail
 from seeall.filter_issues import filter_groups
+from seeall.preview_fix import recolor_text_pixels
+from seeall.vision_analysis import contrast_failures_in_view, color_only_relevant_issues, simulation_panel_text
+from seeall.contrast import hex_to_rgb
 
 load_dotenv()
 
@@ -122,6 +125,7 @@ if image and (st.button("Audit", type="primary") or auto_run):
         "elapsed": elapsed,
         "fallback_note": fallback_note,
         "screen_reader_script": ai_response.screen_reader_script,
+        "findings": findings,
     }
 
 result = st.session_state.get("last_result")
@@ -146,6 +150,16 @@ if result:
     )
     annotated = draw_boxes(result["image"], grouped)
     st.image(annotated, caption="Numbered issues", use_container_width=True)
+
+    fixable = [f for f in result["findings"] if "suggested_hex" in f]
+    if fixable and st.checkbox("Preview with fixes (recoloured text)"):
+        fix_findings = [{**f, "suggested_rgb": hex_to_rgb(f["suggested_hex"])} for f in fixable]
+        fixed_image = recolor_text_pixels(result["image"], fix_findings)
+        col_before, col_after = st.columns(2)
+        with col_before:
+            st.image(result["image"], caption="Before", use_container_width=True)
+        with col_after:
+            st.image(fixed_image, caption="After (suggested colours)", use_container_width=True)
 
     tab_issues, tab_colorblind, tab_hear, tab_report = st.tabs(
         ["Issues", "Colour-blind views", "Hear this screen", "Report"]
@@ -182,14 +196,22 @@ if result:
                 )
 
     with tab_colorblind:
-        sim_cols = st.columns(3)
-        for idx, kind in enumerate(SIMULATION_KINDS):
-            with sim_cols[idx % 3]:
+        ai_flat = [i for i in result["issues"] if i.get("source") == "ai"]
+        for kind in SIMULATION_KINDS:
+            st.subheader(kind.replace("_", " ").title())
+            col_img, col_analysis = st.columns([1, 1])
+            with col_img:
                 try:
                     sim_img = simulate(result["image"], kind)
-                    st.image(sim_img, caption=kind.replace("_", " ").title(), use_container_width=True)
+                    st.image(sim_img, use_container_width=True)
                 except Exception as e:
                     st.error(f"{kind}: {e}")
+            with col_analysis:
+                contrast_fails = contrast_failures_in_view(result["findings"], kind)
+                color_issues = color_only_relevant_issues(ai_flat, kind)
+                analysis, fix = simulation_panel_text(kind, contrast_fails, color_issues)
+                st.markdown(f"**What breaks here:** {analysis}")
+                st.markdown(f"**How to fix it:** {fix}")
 
     with tab_hear:
         script = result["screen_reader_script"]

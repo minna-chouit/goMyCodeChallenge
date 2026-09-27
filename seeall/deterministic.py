@@ -1,5 +1,6 @@
 """Turn raw OCR/contrast findings into the shared issue schema used by
 both deterministic checks and the AI vision pass."""
+from .contrast import css_snippet
 
 
 def to_issues(findings, image_size):
@@ -12,7 +13,8 @@ def to_issues(findings, image_size):
         if not f["contrast_passes"]:
             fix = "Needs manual color check."
             if "suggested_hex" in f:
-                fix = f"Change text color to {f['suggested_hex']} -> {f['suggested_ratio']}:1"
+                snippet = css_snippet(f["suggested_hex"], f["suggested_ratio"], f["bg_rgb"])
+                fix = f"Change text color to {f['suggested_hex']} -> {f['suggested_ratio']}:1 ({snippet})"
             issues.append({
                 "type": "contrast",
                 "severity": "critical" if f["contrast_ratio"] < f["required_ratio"] * 0.7 else "serious",

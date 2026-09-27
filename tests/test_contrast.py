@@ -1,4 +1,4 @@
-from seeall.contrast import contrast_ratio, required_ratio, suggest_passing_color
+from seeall.contrast import contrast_ratio, required_ratio, suggest_passing_color, css_snippet, hex_to_rgb
 
 
 def test_black_white_ratio():
@@ -20,3 +20,19 @@ def test_suggest_passing_color_reaches_target():
     hexcode, ratio = suggest_passing_color((0x9E, 0x9E, 0x9E), (255, 255, 255), 4.5)
     assert ratio >= 4.5
     assert hexcode.startswith("#")
+
+
+def test_css_snippet_format():
+    snippet = css_snippet("#595959", 7.0, (255, 255, 255))
+    assert snippet == "color: #595959; /* 7.0:1 on #FFFFFF */"
+
+
+def test_css_snippet_rounds_ratio_to_one_decimal():
+    snippet = css_snippet("#595959", 7.041, (0, 0, 0))
+    assert "7.0:1" in snippet
+    assert "#000000" in snippet
+
+
+def test_hex_to_rgb_roundtrip():
+    assert hex_to_rgb("#595959") == (0x59, 0x59, 0x59)
+    assert hex_to_rgb("000000") == (0, 0, 0)

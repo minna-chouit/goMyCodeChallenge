@@ -95,3 +95,21 @@ readable without explanation — describing it here per the Done-when: two
 big red "1" circles over the placeholder fields sharing one number, one
 gold "2" circle repeated over each small-text field, no overlapping
 badges, no stray empty box).
+
+## A5. Solutions everywhere
+Added `css_snippet()` and `hex_to_rgb()` to `seeall/contrast.py`, wired into
+the contrast fix text: e.g. "Fix: Change text color to #747474 -> 4.6:1
+(color: #747474; /* 4.6:1 on #FDFDFD */)". Added `seeall/preview_fix.py:
+recolor_text_pixels()` (nearest-cluster pixel recolouring within each
+failing box) and wired a "Preview with fixes" checkbox showing before/after
+side by side. Added `seeall/vision_analysis.py` (contrast_failures_in_view,
+color_only_relevant_issues, simulation_panel_text) giving every simulation
+view a "What breaks here" / "How to fix it" panel. 21 new tests (117 total).
+Verified live on grey_on_white.png: CSS snippet rendered exactly as
+specced; "Preview with fixes" toggled a real before/after recolour;
+every colour-vision view (deuteranopia/protanopia/tritanopia/achromatopsia)
+showed "1 finding relies on colour alone..." + a concrete fix, and Low
+Vision correctly showed "No extra problems for these users" (its one
+contrast issue was already failing originally, not "only in this view").
+Caught and fixed a grammar bug during verification ("1 finding rely" ->
+"1 finding relies") before committing.

@@ -10,7 +10,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] A2. New issue data model with WCAG tags and grouping
 - [x] A3. Fairer score
 - [x] A4. Clear annotations
-- [ ] A5. Solutions everywhere
+- [x] A5. Solutions everywhere
 - [ ] A6. Readable report
 - [ ] A7. New checks
 - [ ] A8. Re-evaluate

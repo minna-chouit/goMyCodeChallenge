@@ -50,3 +50,13 @@ def suggest_passing_color(text_rgb, bg_rgb, target_ratio):
             if lightness in (0.0, 1.0):
                 break
     return None
+
+
+def css_snippet(text_hex, ratio, bg_rgb):
+    bg_hex = "#%02X%02X%02X" % tuple(round(c) for c in bg_rgb)
+    return f"color: {text_hex}; /* {ratio:.1f}:1 on {bg_hex} */"
+
+
+def hex_to_rgb(hexcode):
+    hexcode = hexcode.lstrip("#")
+    return tuple(int(hexcode[i:i + 2], 16) for i in (0, 2, 4))
