@@ -48,27 +48,47 @@ Without any API key configured, the app falls back to a clearly labelled
 
 ## Models used
 
-Fallback order: NVIDIA Build -> OpenRouter -> Google Gemini -> offline mock.
+Fallback order: NVIDIA Build (primary) -> OpenRouter -> Google Gemini ->
+offline mock. Every provider failure is logged with its reason, and the UI
+shows a short note when a fallback happened (e.g. "NVIDIA Build
+rate-limited, used Google Gemini"), so a fallback is never silent.
 
-- NVIDIA Build (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` by default,
-  configurable via `VLM_MODEL`), OpenAI-compatible endpoint.
-- OpenRouter (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` by default,
-  configurable via `OPENROUTER_VLM_MODEL`) — a free-tier NVIDIA Nemotron
-  vision model, useful when the direct NVIDIA Build key isn't available.
-- Google Gemini (`gemini-3.8-flash` by default, configurable via
+- **NVIDIA Build** (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` by
+  default, configurable via `VLM_MODEL`), OpenAI-compatible endpoint. This
+  is a reasoning model that wraps JSON output in `<think>` chain-of-thought
+  by default — SeeAll disables that (`chat_template_kwargs.enable_thinking:
+  false`) and strips any leftover reasoning tags/code fences before
+  parsing. Validated live: 5/5 real calls succeeded, 1-8s latency, no JSON
+  validation failures, no daily quota hit observed.
+- **OpenRouter** (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` by
+  default, configurable via `OPENROUTER_VLM_MODEL`) — the same free-tier
+  NVIDIA Nemotron vision model, used when the direct NVIDIA Build key isn't
+  available.
+- **Google Gemini** (`gemini-3.8-flash` by default, configurable via
   `GEMINI_MODEL`; `gemini-2.0-flash` was retired) via its OpenAI-compatible
-  endpoint. Free tier is capped at 20 requests/day per model — expect
-  fallback to mock if that's exhausted during a demo.
-- Offline mock fallback if no provider is reachable.
+  endpoint. Free tier is capped at **20 requests/day per model** — this was
+  hit twice during our own validation testing, so expect fallback to mock
+  if a demo's Gemini quota is already spent that day.
+- **Offline mock** fallback if no provider is reachable, clearly labelled
+  "MOCK - AI unavailable" in the UI.
+
+AI results are cached in memory per screenshot (by image + deterministic-
+findings hash) for the life of the server process, so re-auditing the same
+image — including repeated clicks of "Try an example screen" — doesn't
+spend API quota twice.
 
 ## Evaluation
 
 `eval/make_synthetic.py` generates 5 synthetic screenshots with known issues
 (grey-on-white text, tiny text, red/green-only status, 2 clean screens).
-`eval/run_eval.py` runs the full pipeline against `eval/images/` and scores
-precision/recall for deterministic checks against `eval/expected.json`,
-writing `eval/results.md`. `tests/test_contrast.py` unit-tests the WCAG
-contrast formula and the colour-suggestion function.
+`eval/run_eval.py` runs the full pipeline against `eval/images/` twice —
+once forcing NVIDIA, once forcing Gemini — and scores precision/recall for
+deterministic checks (provider-independent) plus each provider's AI
+findings against `eval/expected.json`, writing a side-by-side table to
+`eval/results.md`. `tests/test_contrast.py` unit-tests the WCAG contrast
+formula and the colour-suggestion function; `tests/` overall has 50+ tests
+covering the deterministic checks, provider fallback/logging/caching, and
+UI helper logic.
 
 ## Limitations & responsible AI
 

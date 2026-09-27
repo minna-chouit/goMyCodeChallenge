@@ -4,14 +4,24 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 
 ## Must do before freeze
 
-- [ ] **Real-model test: NVIDIA Build and/or OpenRouter.** Only Gemini has
-      been validated against a live API so far (see below). If an
-      `NVIDIA_API_KEY` or `OPENROUTER_API_KEY` becomes available, run the
-      same check: one real audit through the UI, one through
-      `eval/run_eval.py`, confirm no JSON validation failures, confirm the
-      fallback order (NVIDIA -> OpenRouter -> Gemini -> mock) picks the
-      right provider.
-- [ ] **Real screenshots in `eval/images/`.** Currently only the 5 synthetic
+- [x] **Real-model test: NVIDIA Build.** NVIDIA is now the primary provider.
+      Validated live with `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`:
+      5/5 real audits succeeded (UI + eval), 1-8s latency, no JSON
+      validation failures, no daily-quota issue observed. Thinking mode is
+      disabled via `chat_template_kwargs.enable_thinking=false` and any
+      leftover `<think>` tags/code fences are stripped before parsing
+      (`seeall/ai.py: clean_json_response`, `needs_thinking_disabled`).
+- [x] **Real-model test: Gemini (secondary).** Validated live too:
+      `gemini-2.0-flash` was retired (fixed, now `gemini-3.8-flash`).
+      Findings were high-quality with no prompt tuning needed. Free tier's
+      20 req/day cap was hit twice during our own testing — a real demo
+      risk if Gemini becomes primary again on a day it's already used.
+- [ ] **Real-model test: OpenRouter.** Not yet validated live — only NVIDIA
+      and Gemini have real API calls behind them so far. Order is NVIDIA ->
+      OpenRouter -> Gemini -> mock; if NVIDIA's key is ever removed,
+      confirm OpenRouter's free Nemotron model actually gets used and
+      returns valid JSON before relying on it.
+- [ ] **Real screenshots in `eval/images/`.** Still only the 5 synthetic
       images (grey-on-white, tiny text, red/green status, 2 clean) have
       been run through eval. Add 5-7 real app/web screenshots with real
       accessibility issues, add matching entries to `eval/expected.json`,
@@ -22,11 +32,13 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
       `OPENROUTER_API_KEY` / `GEMINI_API_KEY`), and `git push` to the Space
       remote. This needs your HF credentials — not something automatable
       here.
-- [x] **README AI disclosure.** Present: "Models used" section names every
-      provider and fallback order, "Responsible AI" section covers
-      in-memory processing, AI-can-be-wrong warning, and the personal-data
-      warning. Also surfaced live in-app (sidebar + expander). Worth a
-      final read-through before the demo, not a rewrite.
+- [x] **README AI disclosure.** Updated: "Models used" now documents the
+      thinking-mode fix, per-provider live-validation results, the 20
+      req/day Gemini quota risk (hit twice during testing), and the
+      in-memory AI result cache. "Responsible AI" section unchanged and
+      still accurate (in-memory processing, AI-can-be-wrong warning,
+      personal-data warning) — also surfaced live in-app (sidebar +
+      expander + always-visible provider status + fallback-note banner).
 
 ## Brainstormed additions (all approved, all built and committed)
 
@@ -41,14 +53,30 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] Sidebar "How SeeAll works" walkthrough + always-visible AI provider
       status line (not just after running an audit).
 
+## Reliability work done since the initial build
+
+- [x] **Silent exception swallowing fixed.** Every provider failure is now
+      logged (`seeall.ai` logger, `%s failed (%s): %s`) with a short
+      classified reason (`short_error_reason`: rate-limited / model
+      unavailable / authentication failed / unavailable), and the UI shows
+      an `st.info` banner naming which provider failed and why when a
+      fallback happens.
+- [x] **AI result caching.** In-memory cache keyed by image + deterministic-
+      findings hash (`seeall/ai_cache.py`) avoids re-spending quota on
+      repeat audits of the same screenshot within a server process's
+      lifetime. Verified live: a second UI request for the same demo image
+      returned the identical cached latency instead of a new API call.
+
 ## Known issues / risks for the demo
 
-- **Gemini free tier: 20 requests/day per model.** Already exhausted once
-  during validation testing today. If it's exhausted again during judging,
-  the app will silently fall back to mock (clearly labelled in the UI, but
-  judges won't see real AI output). Mitigate by not over-testing right
-  before the demo, and/or having NVIDIA/OpenRouter keys as backup.
-- **Provider failures are swallowed silently** (`except Exception: continue`
-  in `seeall/ai.py`) — there's no server-log trace of *why* a provider
-  failed, only that it fell back. Fine for the hackathon; would need a
-  logged reason before this goes further.
+- **Gemini free tier: 20 requests/day per model.** Confirmed exhausted
+  twice during validation testing today. NVIDIA is primary now, so this
+  mostly matters only if NVIDIA's key becomes unavailable mid-demo.
+- **OpenRouter path is unvalidated.** If both NVIDIA and Gemini fail during
+  the demo, the third hop (OpenRouter's free Nemotron model) has not been
+  exercised against the real API yet — unknown whether its JSON output
+  needs the same thinking-mode fix (it should, same model family) or has
+  its own quirks.
+- **Cache is process-local and unbounded.** Fine for a single demo session;
+  would need an eviction policy or persistence if this ran as a long-lived
+  multi-user service.
