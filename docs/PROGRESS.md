@@ -22,3 +22,22 @@ scale bug, and will need A2/A3 (grouping) or a later OCR calibration fix,
 not A1. Noting this now rather than overclaiming.
 Also widened the demo picker to include jpg/jpeg (was png-only) so
 checkout.jpg is selectable for manual verification going forward.
+
+## A2. New issue data model with WCAG tags and grouping
+Added `seeall/wcag.py` (catalog of 7 criteria used: 1.4.3, 1.1.1, 1.4.1,
+1.3.1, 3.3.2, 2.5.8, 4.1.2, each with id/name/level/principle/description,
+mapped from issue `type`) and `seeall/group_issues.py: group_issues()`
+(groups by wcag_id + type into one issue with an `instances` list; merges
+`source` when both measured and ai contributed; severity = most severe in
+the group). 12 new tests, all passing (68 total).
+Wired into the Issues tab (kept the flat list for scoring/annotation,
+per A3/A4 being separate steps). Verified live on checkout.jpg: 30 flat
+issues collapsed to 5 groups, e.g. "Text is hard to read (13 instances) —
+WCAG 1.4.3 Contrast (Minimum) (Level AA)" and "Tap target or text is too
+small (11 instances) — WCAG 2.5.8" — exactly the "placeholders = 1 issue
+with many instances" target. Score before/after A2: 0/100 -> 0/100
+(scoring untouched until A3, as planned).
+Observed AI-quality nuance (not a bug in this step): one NVIDIA finding
+was typed "alt_text" but its description is actually about contrast on
+"Return to cart" — a model mislabel that will need C1's stricter WCAG-id
+prompt to fix, not something A2's grouping can correct.

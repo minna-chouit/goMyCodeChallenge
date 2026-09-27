@@ -18,6 +18,7 @@ from seeall.report import build_report
 from seeall.demo_picker import pick_example_image
 from seeall.badges import confidence_badge
 from seeall.scale_detect import detect_scale
+from seeall.group_issues import group_issues
 
 load_dotenv()
 
@@ -133,15 +134,20 @@ if result:
     )
 
     with tab_issues:
-        if not result["issues"]:
+        grouped = group_issues(result["issues"])
+        if not grouped:
             st.success("No issues found.")
-        for i, issue in enumerate(result["issues"], start=1):
-            badge = confidence_badge(issue.get("confidence", 1.0))
+        for i, group in enumerate(grouped, start=1):
+            min_confidence = min((inst.get("confidence", 1.0) for inst in group["instances"]), default=1.0)
+            badge = confidence_badge(min_confidence)
+            count = len(group["instances"])
+            instance_note = f" ({count} instances)" if count > 1 else ""
             st.markdown(
-                f"**{i}. [{issue['severity'].upper()}] {issue['type']}** — {badge} \n"
-                f"{issue['description']} \n"
-                f"*Affects:* {issue['affected_users']} \n"
-                f"*Fix:* {issue['fix']}"
+                f"**{i}. [{group['severity'].upper()}] {group['plain_title']}{instance_note}** "
+                f"— WCAG {group['wcag_id']} {group['wcag_name']} (Level {group['level']}) — {badge} \n"
+                f"{group['why_it_matters']} \n"
+                f"*Affects:* {group['who_is_affected']} \n"
+                f"*Fix:* {group['fix']}"
             )
 
     with tab_colorblind:
