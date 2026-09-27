@@ -14,6 +14,7 @@ from seeall.merge import ai_issues_to_schema, merge_and_rank
 from seeall.simulate import simulate, SIMULATION_KINDS
 from seeall.speech import script_to_speech
 from seeall.report import build_report
+from seeall.demo_picker import pick_example_image
 
 load_dotenv()
 
@@ -32,12 +33,22 @@ with st.expander("About your data & AI limitations", expanded=False):
 DEMO_DIR = Path(__file__).parent / "demo"
 demo_images = sorted(p.name for p in DEMO_DIR.glob("*.png")) if DEMO_DIR.exists() else []
 
+if st.button("Try an example screen with known issues", help="Loads a sample screenshot and runs the audit for you"):
+    example = pick_example_image(demo_images)
+    if example:
+        st.session_state["picked_demo_override"] = example
+        st.session_state["auto_run"] = True
+        st.rerun()
+
 col1, col2 = st.columns([2, 1])
 with col1:
     uploaded = st.file_uploader("Upload a screenshot", type=["png", "jpg", "jpeg"])
     picked_demo = None
     if not uploaded and demo_images:
-        picked_demo = st.selectbox("...or pick a demo image", ["(none)"] + demo_images)
+        override = st.session_state.pop("picked_demo_override", None)
+        options = ["(none)"] + demo_images
+        default_index = options.index(override) if override in options else 0
+        picked_demo = st.selectbox("...or pick a demo image", options, index=default_index)
 
 with col2:
     scale = st.selectbox("Screenshot scale", [1, 2, 3], index=0, format_func=lambda s: f"{s}x")
@@ -49,7 +60,8 @@ if uploaded:
 elif picked_demo and picked_demo != "(none)":
     image = Image.open(DEMO_DIR / picked_demo).convert("RGB")
 
-if image and st.button("Audit", type="primary"):
+auto_run = st.session_state.pop("auto_run", False)
+if image and (st.button("Audit", type="primary") or auto_run):
     with st.spinner("Running deterministic checks..."):
         findings = analyze_text_boxes(image, scale)
         deterministic_issues = to_issues(findings, image.size)
