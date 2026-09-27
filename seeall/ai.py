@@ -100,9 +100,10 @@ def build_providers(env):
         model = env.get("OPENROUTER_VLM_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
         providers.append(("OpenRouter", "https://openrouter.ai/api/v1", env["OPENROUTER_API_KEY"], model))
     if env.get("GEMINI_API_KEY"):
+        model = env.get("GEMINI_MODEL", "gemini-3.8-flash")
         providers.append((
             "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/",
-            env["GEMINI_API_KEY"], "gemini-2.0-flash",
+            env["GEMINI_API_KEY"], model,
         ))
     return providers
 

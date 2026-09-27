@@ -4,12 +4,15 @@ import json
 import time
 from pathlib import Path
 
+from dotenv import load_dotenv
 from PIL import Image
 
 from seeall.ocr import analyze_text_boxes
 from seeall.deterministic import to_issues
 from seeall.ai import analyze_with_ai
 from seeall.merge import ai_issues_to_schema
+
+load_dotenv()
 
 ROOT = Path(__file__).parent
 IMAGES_DIR = ROOT / "images"
@@ -38,6 +41,7 @@ def run():
         if not path.exists():
             continue
         image = Image.open(path).convert("RGB")
+        time.sleep(5)  # avoid provider rate limiting across consecutive real API calls
 
         start = time.time()
         findings = analyze_text_boxes(image, 1)

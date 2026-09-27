@@ -55,7 +55,10 @@ Fallback order: NVIDIA Build -> OpenRouter -> Google Gemini -> offline mock.
 - OpenRouter (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` by default,
   configurable via `OPENROUTER_VLM_MODEL`) — a free-tier NVIDIA Nemotron
   vision model, useful when the direct NVIDIA Build key isn't available.
-- Google Gemini (`gemini-2.0-flash`) via its OpenAI-compatible endpoint.
+- Google Gemini (`gemini-3.8-flash` by default, configurable via
+  `GEMINI_MODEL`; `gemini-2.0-flash` was retired) via its OpenAI-compatible
+  endpoint. Free tier is capped at 20 requests/day per model — expect
+  fallback to mock if that's exhausted during a demo.
 - Offline mock fallback if no provider is reachable.
 
 ## Evaluation
