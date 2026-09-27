@@ -157,16 +157,21 @@ def short_error_reason(exc):
     return "unavailable"
 
 
-def analyze_with_ai(image, deterministic_findings):
+def analyze_with_ai(image, deterministic_findings, env=None):
     """Returns (AIResponse, provider_name, seconds_elapsed, fallback_note).
     fallback_note is None when the first configured provider succeeds, else a
-    short judge-readable string like 'NVIDIA Build rate-limited, used Gemini'."""
+    short judge-readable string like 'NVIDIA Build rate-limited, used Gemini'.
+    env defaults to os.environ; pass an explicit dict to force a specific
+    provider (e.g. for side-by-side eval runs)."""
+    if env is None:
+        env = os.environ
+
     cache_key = compute_cache_key(image, deterministic_findings)
     cached = _AI_CACHE.get(cache_key)
     if cached is not None:
         return cached
 
-    providers = build_providers(os.environ)
+    providers = build_providers(env)
     failures = []
 
     for name, base_url, key, model in providers:
