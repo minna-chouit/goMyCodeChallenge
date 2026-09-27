@@ -2,6 +2,25 @@
 
 Feature freeze: 16:15. Nothing new after that — only bug fixes.
 
+## PLAN_V2 progress (docs/PLAN_V2.md)
+
+### Phase A
+- [x] A0. Baseline
+- [ ] A1. Fix screenshot scale
+- [ ] A2. New issue data model with WCAG tags and grouping
+- [ ] A3. Fairer score
+- [ ] A4. Clear annotations
+- [ ] A5. Solutions everywhere
+- [ ] A6. Readable report
+- [ ] A7. New checks
+- [ ] A8. Re-evaluate
+- PAUSE for human approval before Phase B
+### Phase B (plan pending human confirmation)
+- [ ] B1/B2/B3
+- PAUSE for human approval before Phase C
+### Phase C
+- [ ] C1-C4
+
 ## Must do before freeze
 
 - [x] **Real-model test: NVIDIA Build.** NVIDIA is now the primary provider.

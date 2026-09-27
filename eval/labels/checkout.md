@@ -1,0 +1,1 @@
+light placeholder text (1.4.3), placeholders used instead of help text, asterisks with no "* required" note (3.3.2), vague link "Have a coupon? Click here" (2.4.4), small checkbox and small links close together (2.5.8), white text on the red button near the contrast limit (1.4.3). A fair score for this screen is roughly 40-60, not 0.
