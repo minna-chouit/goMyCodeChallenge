@@ -8,7 +8,7 @@ from PIL import Image
 from seeall.ocr import analyze_text_boxes
 from seeall.deterministic import to_issues
 from seeall.annotate import draw_boxes
-from seeall.scoring import compute_score
+from seeall.scoring import compute_score, severity_breakdown, format_breakdown
 from seeall.ai import analyze_with_ai
 from seeall.merge import ai_issues_to_schema, merge_and_rank
 from seeall.simulate import simulate, SIMULATION_KINDS
@@ -85,7 +85,9 @@ if image and (st.button("Audit", type="primary") or auto_run):
 
 result = st.session_state.get("last_result")
 if result:
-    st.metric("Accessibility score", f"{result['score']} / 100")
+    breakdown = format_breakdown(severity_breakdown(result["issues"]))
+    st.metric("Accessibility score", f"{result['score']} / 100", help=breakdown)
+    st.caption(breakdown)
     st.caption(f"AI provider: {result['provider_name']} ({result['elapsed']:.1f}s)")
     annotated = draw_boxes(result["image"], result["issues"])
     st.image(annotated, caption="Numbered issues", use_container_width=True)
