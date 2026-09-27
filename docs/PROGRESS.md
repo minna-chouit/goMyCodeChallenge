@@ -113,3 +113,21 @@ Vision correctly showed "No extra problems for these users" (its one
 contrast issue was already failing originally, not "only in this view").
 Caught and fixed a grammar bug during verification ("1 finding rely" ->
 "1 finding relies") before committing.
+
+## A6. Readable report
+Rewrote `seeall/report.py` on the new grouped data model: `top_fixes()`
+(ranks by the same per-group deduction magnitude `compute_score_v2` uses,
+so "highest impact" is literally "costs the most score"), `verdict_sentence()`
+(one plain sentence per grade), `group_by_principle()` (Perceivable ->
+Operable -> Understandable -> Robust, empty buckets omitted), and a static
+`CANNOT_CHECK` list. `build_report()` (Markdown) restructured to: summary,
+verdict, "Fix these 3 first", issues grouped by principle, cannot-check
+disclosure. Added `build_html_report()` — a self-contained styled/printable
+HTML version of the same structure. 9 new tests (126 total).
+Wired into app.py: Report tab now shows both, with separate "Download
+report (HTML)" and "Download report (Markdown)" buttons.
+Verified live on grey_on_white.png: report opened with score/grade/verdict,
+"Fix these 3 first" (correctly showed only the 1 real issue present, not
+padded to 3), issues grouped under "Perceivable", and the cannot-check
+list — understandable without knowing what "1.4.3" means, per the
+Done-when.

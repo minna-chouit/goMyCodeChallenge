@@ -14,7 +14,7 @@ from seeall.ai import analyze_with_ai, provider_status_label
 from seeall.merge import ai_issues_to_schema, merge_and_rank
 from seeall.simulate import simulate, SIMULATION_KINDS
 from seeall.speech import script_to_speech
-from seeall.report import build_report
+from seeall.report import build_report, build_html_report
 from seeall.demo_picker import pick_example_image
 from seeall.badges import confidence_badge
 from seeall.scale_detect import detect_scale
@@ -224,9 +224,17 @@ if result:
                 st.audio(audio, format="audio/mp3")
 
     with tab_report:
-        report_md = build_report(result["score"], result["issues"], result["provider_name"], result["elapsed"])
+        grade = grade_label(result["score"])
+        report_md = build_report(result["score"], grade, grouped, result["provider_name"], result["elapsed"])
+        report_html = build_html_report(result["score"], grouped, result["provider_name"], result["elapsed"])
         st.markdown(report_md)
-        st.download_button("Download report (Markdown)", report_md, file_name="seeall_report.md")
+        col_md, col_html = st.columns(2)
+        with col_html:
+            st.download_button(
+                "Download report (HTML)", report_html, file_name="seeall_report.html", mime="text/html",
+            )
+        with col_md:
+            st.download_button("Download report (Markdown)", report_md, file_name="seeall_report.md")
 
 elif image:
     st.image(image, caption="Preview", use_container_width=True)

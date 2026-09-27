@@ -11,7 +11,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] A3. Fairer score
 - [x] A4. Clear annotations
 - [x] A5. Solutions everywhere
-- [ ] A6. Readable report
+- [x] A6. Readable report
 - [ ] A7. New checks
 - [ ] A8. Re-evaluate
 - PAUSE for human approval before Phase B
