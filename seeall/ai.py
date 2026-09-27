@@ -10,9 +10,11 @@ import time
 
 from pydantic import ValidationError
 
+from .ai_cache import compute_cache_key, AICache
 from .ai_schema import AIResponse
 
 logger = logging.getLogger("seeall.ai")
+_AI_CACHE = AICache()
 
 _THINK_TAG_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
 _CODE_FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
@@ -159,6 +161,11 @@ def analyze_with_ai(image, deterministic_findings):
     """Returns (AIResponse, provider_name, seconds_elapsed, fallback_note).
     fallback_note is None when the first configured provider succeeds, else a
     short judge-readable string like 'NVIDIA Build rate-limited, used Gemini'."""
+    cache_key = compute_cache_key(image, deterministic_findings)
+    cached = _AI_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
     providers = build_providers(os.environ)
     failures = []
 
@@ -170,7 +177,9 @@ def analyze_with_ai(image, deterministic_findings):
             if failures:
                 first_name, first_reason = failures[0]
                 fallback_note = f"{first_name} {first_reason}, used {name}"
-            return result, name, time.time() - start, fallback_note
+            outcome = (result, name, time.time() - start, fallback_note)
+            _AI_CACHE.set(cache_key, outcome)
+            return outcome
         except Exception as e:
             reason = short_error_reason(e)
             logger.warning("%s failed (%s): %s", name, reason, e)
@@ -182,4 +191,6 @@ def analyze_with_ai(image, deterministic_findings):
     if failures:
         first_name, first_reason = failures[0]
         fallback_note = f"{first_name} {first_reason}, used offline mock"
-    return _mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note
+    outcome = (_mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note)
+    _AI_CACHE.set(cache_key, outcome)
+    return outcome
