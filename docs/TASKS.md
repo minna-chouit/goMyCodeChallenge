@@ -6,7 +6,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 
 ### Phase A
 - [x] A0. Baseline
-- [ ] A1. Fix screenshot scale
+- [x] A1. Fix screenshot scale
 - [ ] A2. New issue data model with WCAG tags and grouping
 - [ ] A3. Fairer score
 - [ ] A4. Clear annotations

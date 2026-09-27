@@ -17,6 +17,7 @@ from seeall.speech import script_to_speech
 from seeall.report import build_report
 from seeall.demo_picker import pick_example_image
 from seeall.badges import confidence_badge
+from seeall.scale_detect import detect_scale
 
 load_dotenv()
 
@@ -50,7 +51,9 @@ with st.expander("About your data & AI limitations", expanded=False):
     )
 
 DEMO_DIR = Path(__file__).parent / "demo"
-demo_images = sorted(p.name for p in DEMO_DIR.glob("*.png")) if DEMO_DIR.exists() else []
+demo_images = sorted(
+    p.name for pattern in ("*.png", "*.jpg", "*.jpeg") for p in DEMO_DIR.glob(pattern)
+) if DEMO_DIR.exists() else []
 
 if st.button("Try an example screen with known issues", help="Loads a sample screenshot and runs the audit for you"):
     example = pick_example_image(demo_images)
@@ -69,15 +72,27 @@ with col1:
         default_index = options.index(override) if override in options else 0
         picked_demo = st.selectbox("...or pick a demo image", options, index=default_index)
 
-with col2:
-    scale = st.selectbox("Screenshot scale", [1, 2, 3], index=0, format_func=lambda s: f"{s}x")
-    language = st.selectbox("Language", ["English", "French", "Arabic"], index=0)
-
 image = None
 if uploaded:
     image = Image.open(io.BytesIO(uploaded.read())).convert("RGB")
 elif picked_demo and picked_demo != "(none)":
     image = Image.open(DEMO_DIR / picked_demo).convert("RGB")
+
+with col2:
+    scale_options = [1, 2, 3]
+    default_scale_index = 0
+    detection = None
+    if image:
+        detection = detect_scale(image.size[0])
+        default_scale_index = scale_options.index(detection.scale)
+    scale = st.selectbox(
+        "Screenshot scale", scale_options, index=default_scale_index, format_func=lambda s: f"{s}x",
+    )
+    if detection:
+        st.caption(f"Detected: {detection.scale}x ({detection.label})")
+        if not detection.confident:
+            st.warning("Scale detection is uncertain for this width — check the dropdown above.")
+    language = st.selectbox("Language", ["English", "French", "Arabic"], index=0)
 
 auto_run = st.session_state.pop("auto_run", False)
 if image and (st.button("Audit", type="primary") or auto_run):
