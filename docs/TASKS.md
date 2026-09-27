@@ -12,7 +12,7 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - [x] A4. Clear annotations
 - [x] A5. Solutions everywhere
 - [x] A6. Readable report
-- [ ] A7. New checks
+- [x] A7. New checks (partial — see notes below)
 - [ ] A8. Re-evaluate
 - PAUSE for human approval before Phase B
 ### Phase B (plan pending human confirmation)
@@ -99,3 +99,17 @@ Feature freeze: 16:15. Nothing new after that — only bug fixes.
 - **Cache is process-local and unbounded.** Fine for a single demo session;
   would need an eviction policy or persistence if this ran as a long-lived
   multi-user service.
+- **A7's longer AI prompt significantly increased NVIDIA latency**: 156s
+  and one call that exceeded 6 minutes, vs. 1-8s before A7's checklist
+  expansion. If this happens during the demo, "Asking the AI vision
+  model..." will sit for a long time — consider trimming the checklist
+  text or splitting it across two calls if this becomes a demo blocker.
+- **The 3.3.2 (asterisk/placeholder-as-label) AI check is unverified.**
+  Added to the prompt but not confirmed live — checkout.jpg's real runs
+  during A7 both happened to return zero AI-found issues. Needs a follow-up
+  live run to confirm the model actually catches this pattern.
+- **`non_text_contrast` (1.4.11) is implemented and tested but disabled**
+  in the live pipeline — it produced 37 false-positive "boundaries"
+  (including the phone status bar) on a real screenshot. Would need real
+  edge/rectangle detection (e.g. OpenCV contour finding) to be usable,
+  not the current concentric-ring colour-sampling heuristic.

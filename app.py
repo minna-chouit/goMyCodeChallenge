@@ -25,6 +25,8 @@ from seeall.filter_issues import filter_groups
 from seeall.preview_fix import recolor_text_pixels
 from seeall.vision_analysis import contrast_failures_in_view, color_only_relevant_issues, simulation_panel_text
 from seeall.contrast import hex_to_rgb
+from seeall.link_purpose import vague_link_issues
+from seeall.aaa_bonus import aaa_passes
 
 load_dotenv()
 
@@ -106,6 +108,12 @@ if image and (st.button("Audit", type="primary") or auto_run):
     with st.spinner("Running deterministic checks..."):
         findings = analyze_text_boxes(image, scale)
         deterministic_issues = to_issues(findings, image.size)
+        deterministic_issues += vague_link_issues(findings, image.size)
+        # non_text_contrast is intentionally NOT wired in here: verified live on
+        # checkout.jpg it flagged 37 near-every-text-box "boundaries" (including
+        # the phone status bar), far too noisy without real UI-element boundary
+        # detection. Kept implemented and unit-tested; see docs/PROGRESS.md A7.
+        aaa_findings = aaa_passes(findings)
 
     with st.spinner("Asking the AI vision model..."):
         ai_response, provider_name, elapsed, fallback_note = analyze_with_ai(image, deterministic_issues)
@@ -126,6 +134,7 @@ if image and (st.button("Audit", type="primary") or auto_run):
         "fallback_note": fallback_note,
         "screen_reader_script": ai_response.screen_reader_script,
         "findings": findings,
+        "aaa_findings": aaa_findings,
     }
 
 result = st.session_state.get("last_result")
@@ -141,6 +150,9 @@ if result:
     st.caption(f"AI provider: {result['provider_name']} ({result['elapsed']:.1f}s)")
     if result.get("fallback_note"):
         st.info(f"Fallback used: {result['fallback_note']}")
+    if result.get("aaa_findings"):
+        n = len(result["aaa_findings"])
+        st.caption(f"ℹ️ {n} text element{'s' if n != 1 else ''} also pass{'es' if n == 1 else ''} the stricter AAA contrast level (7:1) — informational, not scored.")
 
     st.markdown(
         "**Legend:** "

@@ -131,3 +131,42 @@ Verified live on grey_on_white.png: report opened with score/grade/verdict,
 padded to 3), issues grouped under "Perceivable", and the cannot-check
 list — understandable without knowing what "1.4.3" means, per the
 Done-when.
+
+## A7. New checks
+**Measured (all unit-tested):**
+- `seeall/link_purpose.py`: `is_vague_link_text()` flags "click here", "read
+  more", "here", "more", "learn more", French, and Arabic equivalents.
+  Short single words ("here"/"more") require an exact match so real words
+  like "adhere"/"moreover" aren't false-flagged; longer phrases match as a
+  compact substring so OCR-merged text like "Have a coupon?Clickhere"
+  still gets caught. `vague_link_issues()` builds the 2.4.4 issue.
+  **Verified live on checkout.jpg: correctly flagged "Have a
+  coupon?Clickhere" as WCAG 2.4.4** — exactly the plan's Done-when.
+- `seeall/aaa_bonus.py` + `required_ratio_aaa()`: informational-only report
+  of text that also clears the stricter AAA bar (7:1 normal / 4.5:1
+  large); no score impact. Shown as a caption under the score.
+- `seeall/non_text_contrast.py`: implemented and unit-tested (concentric-
+  ring sampling around each OCR box vs. further-out background), but
+  **NOT wired into the live pipeline** — verified live on checkout.jpg it
+  produced 37 flagged "boundaries" including the phone's status bar
+  ("9:41"), i.e. it can't tell an input border from ordinary text
+  neighbourhoods on a real screenshot, only on a clean synthetic test.
+  Shipping the smallest WORKING version per the plan's own rule: kept the
+  tested module (in case a future PR adds real edge/rectangle detection)
+  but disabled it from `app.py` rather than ship 37 false positives.
+
+**AI checklist (7 new types added: image_of_text, error_handling,
+captcha_or_memory_test, drag_only, sticky_obscures_focus, orientation_lock,
+visual_presentation — each mapped to its own WCAG id in wcag.py; existing
+`missing_label` prompt text extended to also cover the 3.3.2
+asterisk-with-no-legend and placeholder-as-only-label patterns rather than
+adding a redundant new type for the same WCAG id).**
+Verified live on checkout.jpg: the longer SYSTEM_PROMPT still produced
+valid JSON (no validation-failure retries), but **latency increased a
+lot** — one call took 156s (vs. 1-8s pre-A7) and a second call exceeded
+6 minutes before being cut off. This run happened to return zero AI-found
+issues both times (a model-variance outcome, not a crash), so the 3.3.2
+asterisk-legend AI catch specifically could not be confirmed live within
+the time available — flagged in docs/TASKS.md as unverified, not claimed
+as working.
+30 new tests (148 total).

@@ -7,6 +7,8 @@ class AIIssue(BaseModel):
     type: Literal[
         "color_only", "icon_unclear", "missing_label",
         "small_target", "layout", "alt_text", "other",
+        "image_of_text", "error_handling", "captcha_or_memory_test",
+        "drag_only", "sticky_obscures_focus", "orientation_lock", "visual_presentation",
     ]
     severity: Literal["critical", "serious", "minor"]
     box: List[confloat(ge=0, le=1)] = Field(min_length=4, max_length=4)

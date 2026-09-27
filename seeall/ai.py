@@ -21,12 +21,29 @@ _CODE_FENCE_RE = re.compile(r"^```(?:json)?\s*|\s*```$", re.MULTILINE)
 
 SYSTEM_PROMPT = (
     "You are an accessibility auditor. Given a UI screenshot, find issues a "
-    "deterministic tool cannot: meaning shown by color only, unclear icons, "
-    "missing or vague labels, tap targets under 24x24 px, cluttered layout, "
-    "and images needing alt text. Do not repeat the issues already listed as "
-    "'known deterministic findings' below. Respond with STRICT JSON ONLY, no "
-    "markdown fences, matching exactly this schema:\n"
-    '{"issues":[{"type":"color_only|icon_unclear|missing_label|small_target|layout|alt_text|other",'
+    "deterministic tool cannot. Check specifically for:\n"
+    "- color_only: meaning shown by colour alone.\n"
+    "- icon_unclear: icons with no clear meaning.\n"
+    "- missing_label: missing/vague labels, OR required fields marked only with "
+    "'*' with no visible '* = required' legend, OR placeholder text used as the "
+    "only label/hint for a field (placeholders disappear once typed).\n"
+    "- small_target: tap targets under 24x24 px.\n"
+    "- layout: cluttered or confusing layout.\n"
+    "- alt_text: images needing alt text.\n"
+    "- image_of_text: text baked into an image instead of real, selectable text.\n"
+    "- error_handling: form errors shown only by colour, or with no suggestion of how to fix them.\n"
+    "- captcha_or_memory_test: a CAPTCHA or memory-based puzzle on a login/auth screen with no alternative.\n"
+    "- drag_only: an action (e.g. a slider, reorder) that can only be done by dragging, no tap/click alternative.\n"
+    "- sticky_obscures_focus: a sticky header/footer that could fully hide a focused element below it.\n"
+    "- orientation_lock: a 'rotate your device' message forcing one orientation.\n"
+    "- visual_presentation: justified text or very long lines that are hard to read.\n"
+    "- other: anything else accessibility-relevant not covered above.\n"
+    "Do not repeat the issues already listed as 'known deterministic findings' "
+    "below. Respond with STRICT JSON ONLY, no markdown fences, matching exactly "
+    "this schema:\n"
+    '{"issues":[{"type":"color_only|icon_unclear|missing_label|small_target|layout|'
+    'alt_text|image_of_text|error_handling|captcha_or_memory_test|drag_only|'
+    'sticky_obscures_focus|orientation_lock|visual_presentation|other",'
     '"severity":"critical|serious|minor","box":[x0,y0,x1,y1],"description":"...",'
     '"affected_users":"...","fix":"...","confidence":0.0}],'
     '"alt_texts":[{"box":[x0,y0,x1,y1],"alt":"..."}],'

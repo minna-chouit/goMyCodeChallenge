@@ -60,3 +60,9 @@ def css_snippet(text_hex, ratio, bg_rgb):
 def hex_to_rgb(hexcode):
     hexcode = hexcode.lstrip("#")
     return tuple(int(hexcode[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def required_ratio_aaa(font_size_px, bold=False):
+    """WCAG 1.4.6 Contrast (Enhanced): 4.5:1 for large text, 7:1 otherwise."""
+    is_large = font_size_px >= 24 or (bold and font_size_px >= 18.66)
+    return 4.5 if is_large else 7.0

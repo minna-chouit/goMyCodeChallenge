@@ -12,6 +12,15 @@ PLAIN_TITLES = {
     "layout": "Layout may be confusing",
     "alt_text": "Image needs a text alternative",
     "other": "Accessibility issue",
+    "link_purpose": "Link text doesn't say where it goes",
+    "non_text_contrast": "Input or button boundary is hard to see",
+    "image_of_text": "Text shown as an image",
+    "error_handling": "Error isn't clearly described",
+    "captcha_or_memory_test": "Login requires a puzzle or memory test",
+    "drag_only": "Action can only be done by dragging",
+    "sticky_obscures_focus": "Sticky bar may hide the focused item",
+    "orientation_lock": "Screen may be locked to one orientation",
+    "visual_presentation": "Text layout is hard to read",
 }
 
 
