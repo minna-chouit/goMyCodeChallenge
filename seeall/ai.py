@@ -143,17 +143,43 @@ def provider_status_label(env):
     return label
 
 
+def short_error_reason(exc):
+    """Map an exception to a short, judge-readable reason for a fallback note."""
+    text = f"{type(exc).__name__} {exc}".lower()
+    if "429" in text or "rate" in text or "quota" in text:
+        return "rate-limited"
+    if "404" in text or "not found" in text or "not_found" in text:
+        return "model unavailable"
+    if "401" in text or "403" in text or "auth" in text:
+        return "authentication failed"
+    return "unavailable"
+
+
 def analyze_with_ai(image, deterministic_findings):
-    """Returns (AIResponse, provider_name, seconds_elapsed)."""
+    """Returns (AIResponse, provider_name, seconds_elapsed, fallback_note).
+    fallback_note is None when the first configured provider succeeds, else a
+    short judge-readable string like 'NVIDIA Build rate-limited, used Gemini'."""
     providers = build_providers(os.environ)
+    failures = []
 
     for name, base_url, key, model in providers:
         start = time.time()
         try:
             result = _call_provider(base_url, key, model, image, deterministic_findings)
-            return result, name, time.time() - start
-        except Exception:
+            fallback_note = None
+            if failures:
+                first_name, first_reason = failures[0]
+                fallback_note = f"{first_name} {first_reason}, used {name}"
+            return result, name, time.time() - start, fallback_note
+        except Exception as e:
+            reason = short_error_reason(e)
+            logger.warning("%s failed (%s): %s", name, reason, e)
+            failures.append((name, reason))
             continue
 
     start = time.time()
-    return _mock_response(image), "MOCK - AI unavailable", time.time() - start
+    fallback_note = None
+    if failures:
+        first_name, first_reason = failures[0]
+        fallback_note = f"{first_name} {first_reason}, used offline mock"
+    return _mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note

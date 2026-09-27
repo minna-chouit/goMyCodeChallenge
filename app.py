@@ -86,7 +86,7 @@ if image and (st.button("Audit", type="primary") or auto_run):
         deterministic_issues = to_issues(findings, image.size)
 
     with st.spinner("Asking the AI vision model..."):
-        ai_response, provider_name, elapsed = analyze_with_ai(image, deterministic_issues)
+        ai_response, provider_name, elapsed, fallback_note = analyze_with_ai(image, deterministic_issues)
         ai_issues = ai_issues_to_schema(ai_response, image.size)
 
     issues = merge_and_rank(deterministic_issues, ai_issues)
@@ -98,6 +98,7 @@ if image and (st.button("Audit", type="primary") or auto_run):
         "score": score,
         "provider_name": provider_name,
         "elapsed": elapsed,
+        "fallback_note": fallback_note,
         "screen_reader_script": ai_response.screen_reader_script,
     }
 
@@ -107,6 +108,8 @@ if result:
     st.metric("Accessibility score", f"{result['score']} / 100", help=breakdown)
     st.caption(breakdown)
     st.caption(f"AI provider: {result['provider_name']} ({result['elapsed']:.1f}s)")
+    if result.get("fallback_note"):
+        st.info(f"Fallback used: {result['fallback_note']}")
     annotated = draw_boxes(result["image"], result["issues"])
     st.image(annotated, caption="Numbered issues", use_container_width=True)
 

@@ -8,7 +8,7 @@ def test_no_keys_falls_back_to_mock(monkeypatch):
         monkeypatch.delenv(key, raising=False)
 
     image = Image.new("RGB", (10, 10), "white")
-    response, provider_name, elapsed = analyze_with_ai(image, [])
+    response, provider_name, elapsed, fallback_note = analyze_with_ai(image, [])
 
     assert provider_name.startswith("MOCK")
     assert "MOCK" in response.screen_reader_script[0]

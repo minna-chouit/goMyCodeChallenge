@@ -48,7 +48,7 @@ def run():
         det_issues = to_issues(findings, image.size)
         det_elapsed = time.time() - start
 
-        ai_response, provider, ai_elapsed = analyze_with_ai(image, det_issues)
+        ai_response, provider, ai_elapsed, fallback_note = analyze_with_ai(image, det_issues)
         total_calls += 1
         if provider.startswith("MOCK"):
             fallback_used = True
