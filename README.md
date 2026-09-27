@@ -48,11 +48,15 @@ Without any API key configured, the app falls back to a clearly labelled
 
 ## Models used
 
+Fallback order: NVIDIA Build -> OpenRouter -> Google Gemini -> offline mock.
+
 - NVIDIA Build (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning` by default,
   configurable via `VLM_MODEL`), OpenAI-compatible endpoint.
-- Google Gemini (`gemini-2.0-flash`) via its OpenAI-compatible endpoint, as
-  fallback.
-- Offline mock fallback if neither provider is reachable.
+- OpenRouter (`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` by default,
+  configurable via `OPENROUTER_VLM_MODEL`) — a free-tier NVIDIA Nemotron
+  vision model, useful when the direct NVIDIA Build key isn't available.
+- Google Gemini (`gemini-2.0-flash`) via its OpenAI-compatible endpoint.
+- Offline mock fallback if no provider is reachable.
 
 ## Evaluation
 

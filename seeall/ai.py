@@ -1,4 +1,5 @@
-"""Vision-model issue detection with provider fallback: NVIDIA Build -> Gemini -> offline mock."""
+"""Vision-model issue detection with provider fallback:
+NVIDIA Build -> OpenRouter -> Gemini -> offline mock."""
 import base64
 import io
 import json
@@ -87,20 +88,28 @@ def _mock_response(image):
     )
 
 
-def analyze_with_ai(image, deterministic_findings):
-    """Returns (AIResponse, provider_name, seconds_elapsed)."""
-    nvidia_key = os.environ.get("NVIDIA_API_KEY")
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-
+def build_providers(env):
+    """Pure function: env dict -> ordered list of (name, base_url, key, model).
+    Order: NVIDIA Build -> OpenRouter -> Gemini. Providers without an API key
+    in env are skipped."""
     providers = []
-    if nvidia_key:
-        model = os.environ.get("VLM_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning")
-        providers.append(("NVIDIA Build", "https://integrate.api.nvidia.com/v1", nvidia_key, model))
-    if gemini_key:
+    if env.get("NVIDIA_API_KEY"):
+        model = env.get("VLM_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning")
+        providers.append(("NVIDIA Build", "https://integrate.api.nvidia.com/v1", env["NVIDIA_API_KEY"], model))
+    if env.get("OPENROUTER_API_KEY"):
+        model = env.get("OPENROUTER_VLM_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
+        providers.append(("OpenRouter", "https://openrouter.ai/api/v1", env["OPENROUTER_API_KEY"], model))
+    if env.get("GEMINI_API_KEY"):
         providers.append((
             "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/",
-            gemini_key, "gemini-2.0-flash",
+            env["GEMINI_API_KEY"], "gemini-2.0-flash",
         ))
+    return providers
+
+
+def analyze_with_ai(image, deterministic_findings):
+    """Returns (AIResponse, provider_name, seconds_elapsed)."""
+    providers = build_providers(os.environ)
 
     for name, base_url, key, model in providers:
         start = time.time()
