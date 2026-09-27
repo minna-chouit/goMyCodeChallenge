@@ -15,6 +15,7 @@ from seeall.simulate import simulate, SIMULATION_KINDS
 from seeall.speech import script_to_speech
 from seeall.report import build_report
 from seeall.demo_picker import pick_example_image
+from seeall.badges import confidence_badge
 
 load_dotenv()
 
@@ -97,9 +98,9 @@ if result:
         if not result["issues"]:
             st.success("No issues found.")
         for i, issue in enumerate(result["issues"], start=1):
-            flag = " — Needs human check" if issue.get("needs_human_check") else ""
+            badge = confidence_badge(issue.get("confidence", 1.0))
             st.markdown(
-                f"**{i}. [{issue['severity'].upper()}] {issue['type']}{flag}** \n"
+                f"**{i}. [{issue['severity'].upper()}] {issue['type']}** — {badge} \n"
                 f"{issue['description']} \n"
                 f"*Affects:* {issue['affected_users']} \n"
                 f"*Fix:* {issue['fix']}"
