@@ -25,7 +25,7 @@ def to_issues(findings, image_size):
                 "affected_users": "Users with low vision or color vision deficiencies.",
                 "fix": fix,
                 "confidence": 1.0,
-                "source": "deterministic",
+                "source": "measured",
             })
 
         if f["small_text"]:
@@ -41,6 +41,6 @@ def to_issues(findings, image_size):
                 "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
                 "fix": "Increase font size to at least 12-14 CSS px.",
                 "confidence": 1.0,
-                "source": "deterministic",
+                "source": "measured",
             })
     return issues

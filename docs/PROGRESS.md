@@ -63,3 +63,35 @@ contrast failure on an otherwise clean image; scoring it at 85 rather
 than near-0 is the intended fairness improvement, not a bug. Flagging
 this honestly rather than tuning the formula to force a lower number for
 one specific test image.
+
+## A4. Clear annotations
+Added `seeall/box_validation.py` (is_valid_box, is_low_content,
+drop_invalid_ai_boxes — drops AI boxes outside the image, <8x8px, or over
+near-uniform/empty regions), `seeall/thumbnail.py` (crop_thumbnail),
+`seeall/filter_issues.py` (all/critical/measured/ai), and rewrote
+`seeall/annotate.py` to draw per-GROUP numbers (repeated on every
+instance), severity colour (red/orange/dark-yellow — pure yellow (255,255,0)
+is nearly invisible on white, so used a darkened gold instead for the
+annotation's own legibility), solid outline for measured, dashed for AI
+(hand-rolled dashed-rectangle since PIL has no native dashed stroke).
+27 new tests (102 total).
+Wired into app.py: `drop_invalid_ai_boxes` runs right after the AI call,
+before merging; a legend line above the image explains colour/outline/
+numbering; a "Show: All/Critical/Measured/AI" radio filters the issue
+list (image numbering stays fixed to the full set so filtering doesn't
+renumber); each issue card shows a cropped thumbnail of its first
+instance.
+**Bug found and fixed during verification**: deterministic issues were
+tagged `source: "deterministic"` (from before A2 existed), but A2/A4's
+data model and every new test assumed `"measured"` per the plan's own
+wording. This silently made every measured (OCR/contrast) box render
+DASHED instead of solid — caught by rendering the annotated checkout.jpg
+locally and visually inspecting it. Fixed by renaming the source string
+in `seeall/deterministic.py` (2 lines); no test had to change since they
+all already expected "measured". Before/after annotated images saved at
+docs/baseline/checkout_v1_annotated.jpg (old flat/unlabelled boxes) vs
+docs/baseline/checkout_v2_annotated.jpg (grouped numbers, solid outlines,
+readable without explanation — describing it here per the Done-when: two
+big red "1" circles over the placeholder fields sharing one number, one
+gold "2" circle repeated over each small-text field, no overlapping
+badges, no stray empty box).

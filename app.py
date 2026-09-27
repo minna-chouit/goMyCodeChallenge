@@ -19,6 +19,9 @@ from seeall.demo_picker import pick_example_image
 from seeall.badges import confidence_badge
 from seeall.scale_detect import detect_scale
 from seeall.group_issues import group_issues
+from seeall.box_validation import drop_invalid_ai_boxes
+from seeall.thumbnail import crop_thumbnail
+from seeall.filter_issues import filter_groups
 
 load_dotenv()
 
@@ -104,6 +107,7 @@ if image and (st.button("Audit", type="primary") or auto_run):
     with st.spinner("Asking the AI vision model..."):
         ai_response, provider_name, elapsed, fallback_note = analyze_with_ai(image, deterministic_issues)
         ai_issues = ai_issues_to_schema(ai_response, image.size)
+        ai_issues = drop_invalid_ai_boxes(ai_issues, image)
 
     issues = merge_and_rank(deterministic_issues, ai_issues)
     grouped = group_issues(issues)
@@ -133,7 +137,14 @@ if result:
     st.caption(f"AI provider: {result['provider_name']} ({result['elapsed']:.1f}s)")
     if result.get("fallback_note"):
         st.info(f"Fallback used: {result['fallback_note']}")
-    annotated = draw_boxes(result["image"], result["issues"])
+
+    st.markdown(
+        "**Legend:** "
+        "\U0001F534 critical &nbsp; \U0001F7E0 serious &nbsp; \U0001F7E1 minor &nbsp;&nbsp;|&nbsp;&nbsp; "
+        "solid outline = measured &nbsp; dashed outline = AI finding &nbsp;&nbsp;|&nbsp;&nbsp; "
+        "numbers match the issue list below"
+    )
+    annotated = draw_boxes(result["image"], grouped)
     st.image(annotated, caption="Numbered issues", use_container_width=True)
 
     tab_issues, tab_colorblind, tab_hear, tab_report = st.tabs(
@@ -141,20 +152,34 @@ if result:
     )
 
     with tab_issues:
-        if not grouped:
-            st.success("No issues found.")
+        filter_mode = st.radio(
+            "Show", ["all", "critical", "measured", "ai"], horizontal=True,
+            format_func=lambda m: {"all": "All", "critical": "Critical only",
+                                    "measured": "Measured only", "ai": "AI only"}[m],
+        )
+        filtered = filter_groups(grouped, filter_mode)
+        if not filtered:
+            st.success("No issues found." if not grouped else "No issues match this filter.")
         for i, group in enumerate(grouped, start=1):
+            if group not in filtered:
+                continue
             min_confidence = min((inst.get("confidence", 1.0) for inst in group["instances"]), default=1.0)
             badge = confidence_badge(min_confidence)
             count = len(group["instances"])
             instance_note = f" ({count} instances)" if count > 1 else ""
-            st.markdown(
-                f"**{i}. [{group['severity'].upper()}] {group['plain_title']}{instance_note}** "
-                f"— WCAG {group['wcag_id']} {group['wcag_name']} (Level {group['level']}) — {badge} \n"
-                f"{group['why_it_matters']} \n"
-                f"*Affects:* {group['who_is_affected']} \n"
-                f"*Fix:* {group['fix']}"
-            )
+            col_thumb, col_text = st.columns([1, 4])
+            with col_thumb:
+                first_box = group["instances"][0].get("box_px")
+                if first_box:
+                    st.image(crop_thumbnail(result["image"], first_box), width=100)
+            with col_text:
+                st.markdown(
+                    f"**{i}. [{group['severity'].upper()}] {group['plain_title']}{instance_note}** "
+                    f"— WCAG {group['wcag_id']} {group['wcag_name']} (Level {group['level']}) — {badge} \n"
+                    f"{group['why_it_matters']} \n"
+                    f"*Affects:* {group['who_is_affected']} \n"
+                    f"*Fix:* {group['fix']}"
+                )
 
     with tab_colorblind:
         sim_cols = st.columns(3)
