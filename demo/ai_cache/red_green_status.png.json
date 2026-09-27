@@ -1,0 +1,24 @@
+{
+  "provider_name": "NVIDIA Build",
+  "elapsed": 3.6144914627075195,
+  "response": {
+    "issues": [
+      {
+        "type": "color_only",
+        "severity": "critical",
+        "box": [
+          0.05,
+          0.35,
+          0.15,
+          0.5
+        ],
+        "description": "Red circle indicates status but color alone is not sufficient for meaning; green circle also indicates status but color alone is not sufficient for meaning.",
+        "affected_users": "All users, especially colorblind users",
+        "fix": "Add text label or icon with meaning (e.g., 'Error' or 'Success') next to colored circles.",
+        "confidence": 0.95
+      }
+    ],
+    "alt_texts": [],
+    "screen_reader_script": []
+  }
+}

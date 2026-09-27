@@ -1,0 +1,271 @@
+{
+  "provider_name": "NVIDIA Build",
+  "elapsed": 40.93270921707153,
+  "response": {
+    "issues": [
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.13838120104438642,
+          0.15347018572825025,
+          0.3263707571801567,
+          0.16715542521994134
+        ],
+        "description": "The 'Full Name' field has a placeholder 'Enter name' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"fullname\">Full Name</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.5744125326370757,
+          0.15249266862170088,
+          0.762402088772846,
+          0.1681329423264907
+        ],
+        "description": "The 'Email Address' field has a placeholder 'Enter email' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"email\">Email Address</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.1409921671018277,
+          0.23558162267839688,
+          0.3629242819843342,
+          0.24926686217008798
+        ],
+        "description": "The 'Address' field has a placeholder 'Enter address' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"address\">Address</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.13054830287206268,
+          0.31573802541544477,
+          0.21148825065274152,
+          0.33724340175953077
+        ],
+        "description": "The 'City' field has a placeholder 'City' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"city\">City</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.7310704960835509,
+          0.31671554252199413,
+          0.8877284595300261,
+          0.3343108504398827
+        ],
+        "description": "The 'Zip Code' field has a placeholder 'ZIP Code' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"zip\">Zip Code</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.5744125326370757,
+          0.40175953079178883,
+          0.8093994778067886,
+          0.41544477028348
+        ],
+        "description": "The 'Phone Number' field has a placeholder 'Phone number' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"phone\">Phone Number</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.13577023498694518,
+          0.70772238514174,
+          0.2558746736292428,
+          0.7243401759530792
+        ],
+        "description": "The 'Expiry Date' field has a placeholder 'MM/YY' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"expiry\">Expiry Date</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.5848563968668408,
+          0.70772238514174,
+          0.6657963446475196,
+          0.7243401759530792
+        ],
+        "description": "The 'CVV' field has a placeholder 'CVV' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"cvv\">CVV</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.13315926892950392,
+          0.7790811339198436,
+          0.360313315926893,
+          0.7956989247311828
+        ],
+        "description": "The 'Name on Card' field has a placeholder 'Name on card' but no visible label associated with the input field.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"nameoncard\">Name on Card</label>) that is programmatically associated with the input field.",
+        "confidence": 1.0
+      },
+      {
+        "type": "missing_label",
+        "severity": "critical",
+        "box": [
+          0.17232375979112272,
+          0.8426197458455523,
+          0.4725848563968668,
+          0.8563049853372434
+        ],
+        "description": "The checkbox for 'I would like to receive newsletters and offers via email' has no visible label associated with it.",
+        "affected_users": "Users with cognitive disabilities, screen reader users, and users who rely on visual cues to identify form fields.",
+        "fix": "Add a visible label element (e.g., <label for=\"newsletter\">I would like to receive newsletters and offers via email</label>) that is programmatically associated with the checkbox.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.13838120104438642,
+          0.15347018572825025,
+          0.3263707571801567,
+          0.16715542521994134
+        ],
+        "description": "Text \"Entername\" is estimated at 10.5px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.1409921671018277,
+          0.23558162267839688,
+          0.3629242819843342,
+          0.24926686217008798
+        ],
+        "description": "Text \"Enteraddress\" is estimated at 10.5px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.10443864229765012,
+          0.458455522971652,
+          0.45430809399477806,
+          0.47116324535679377
+        ],
+        "description": "Text \"PAYMENTMETHOD\" is estimated at 9.8px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.16449086161879894,
+          0.4887585532746823,
+          0.4490861618798956,
+          0.5034213098729228
+        ],
+        "description": "Text \"Credit/DebitCard\" is estimated at 11.2px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.10443864229765012,
+          0.6060606060606061,
+          0.3263707571801567,
+          0.6197458455522972
+        ],
+        "description": "Text \"Card Number*\" is estimated at 10.5px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.17232375979112272,
+          0.8426197458455523,
+          0.4725848563968668,
+          0.8563049853372434
+        ],
+        "description": "Text \"andoffersviaemail.\" is estimated at 10.5px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      },
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.31592689295039167,
+          0.9530791788856305,
+          0.7127937336814621,
+          0.967741935483871
+        ],
+        "description": "Text \"Have a coupon?Clickhere\" is estimated at 11.2px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      }
+    ],
+    "alt_texts": [],
+    "screen_reader_script": [
+      "Heading, Checkout",
+      "Full Name, Edit text",
+      "Email Address, Edit text",
+      "Address, Edit text",
+      "City, Edit text",
+      "State, Dropdown",
+      "Zip Code, Edit text",
+      "Country, Dropdown",
+      "Phone Number, Edit text",
+      "Payment Method, Group",
+      "Credit / Debit Card, Radio button",
+      "UPI, Radio button",
+      "Net Banking, Radio button",
+      "Wallet, Radio button",
+      "Card Number, Edit text",
+      "Expiry Date, Edit text",
+      "CVV, Edit text",
+      "Name on Card, Edit text",
+      "Checkbox, I would like to receive newsletters and offers via email",
+      "Button, Place Order",
+      "Link, Return to cart",
+      "Link, Have a coupon? Click here"
+    ]
+  }
+}

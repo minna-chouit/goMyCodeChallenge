@@ -1,0 +1,24 @@
+{
+  "provider_name": "NVIDIA Build",
+  "elapsed": 4.163919448852539,
+  "response": {
+    "issues": [
+      {
+        "type": "color_only",
+        "severity": "critical",
+        "box": [
+          0.0525,
+          0.425,
+          0.59,
+          0.54
+        ],
+        "description": "Text \"Low contrast text\" has low contrast against the white background, making it difficult to read for users with low vision or color vision deficiencies.",
+        "affected_users": "Users with low vision or color vision deficiencies.",
+        "fix": "Change text color to a darker shade (e.g., #333333) to achieve a contrast ratio of at least 4.5:1 against the white background.",
+        "confidence": 1.0
+      }
+    ],
+    "alt_texts": [],
+    "screen_reader_script": []
+  }
+}

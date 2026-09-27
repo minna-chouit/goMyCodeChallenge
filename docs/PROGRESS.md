@@ -188,3 +188,27 @@ Cut for time: did not systematically cross-check each label's "Should NOT
 be flagged" false-positive traps, or re-run the AI dimension across all 12
 new real screenshots (both flagged as follow-ups in eval/results.md and
 docs/TASKS.md rather than silently skipped).
+
+## Post-Phase-A: latency, demo pre-compute, personal-data check
+- **Latency**: see the "Fix AI latency" commit — shorter prompt, image
+  resize, max_tokens 1500, 40s hard timeout, max_retries=0 (found the SDK's
+  own retry/backoff was stacking extra delay: a two-provider failure round
+  trip dropped from 46.55s to 2.5s once disabled). Real successful NVIDIA
+  call after the fix: 41.1s (was 156s+). Added a distinct "measured checks
+  only" response when every provider times out, instead of the fake MOCK
+  placeholder.
+- **Demo pre-compute**: `scripts/precompute_demo_ai.py` ran the real AI
+  pipeline for all 4 demo/ images and saved results to
+  `demo/ai_cache/*.json`. `seeall/demo_cache.py` seeds the in-memory
+  `_AI_CACHE` from these files once per server process (`st.cache_resource`
+  in app.py), so "Try an example screen" is instant even right after a
+  fresh Streamlit Cloud restart, which loses the in-memory cache. Verified
+  live: grey_on_white.png's cached "AI provider: NVIDIA Build (4.2s)"
+  caption matched the precomputed value exactly with no live API wait.
+- **Personal data audit**: reviewed all 16 eval/images. Found and redacted
+  two real leaks: an unblurred car licence plate in
+  `oudknisProductDetailsDesktop.png`, and a real email address
+  (`joana.cerejo@...`) in `random form ui mobile.jpg` (the Maze screenshot)
+  — both replaced with solid redaction boxes. All other images (news
+  sites, empty/placeholder form fields, a fictional patient-name design
+  mockup) checked clean.

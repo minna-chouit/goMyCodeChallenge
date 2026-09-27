@@ -27,6 +27,8 @@ from seeall.vision_analysis import contrast_failures_in_view, color_only_relevan
 from seeall.contrast import hex_to_rgb
 from seeall.link_purpose import vague_link_issues
 from seeall.aaa_bonus import aaa_passes
+from seeall.demo_cache import seed_ai_cache
+from seeall import ai as ai_module
 
 load_dotenv()
 
@@ -63,6 +65,30 @@ DEMO_DIR = Path(__file__).parent / "demo"
 demo_images = sorted(
     p.name for pattern in ("*.png", "*.jpg", "*.jpeg") for p in DEMO_DIR.glob(pattern)
 ) if DEMO_DIR.exists() else []
+
+
+@st.cache_resource
+def _seed_demo_ai_cache():
+    """Seeds the in-memory AI cache from precomputed JSON (demo/ai_cache/)
+    so 'Try an example screen' is instant even right after a fresh deploy,
+    since Streamlit Cloud restarts lose the in-memory cache. Runs once per
+    server process."""
+    seeded = 0
+    for name in demo_images:
+        path = DEMO_DIR / name
+        try:
+            image = Image.open(path).convert("RGB")
+        except Exception:
+            continue
+        scale = detect_scale(image.size[0]).scale
+        findings = analyze_text_boxes(image, scale)
+        det_issues = to_issues(findings, image.size) + vague_link_issues(findings, image.size)
+        if seed_ai_cache(DEMO_DIR, ai_module._AI_CACHE, name, image, det_issues):
+            seeded += 1
+    return seeded
+
+
+_seed_demo_ai_cache()
 
 if st.button("Try an example screen with known issues", help="Loads a sample screenshot and runs the audit for you"):
     example = pick_example_image(demo_images)

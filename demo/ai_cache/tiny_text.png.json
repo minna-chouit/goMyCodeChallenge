@@ -1,0 +1,24 @@
+{
+  "provider_name": "NVIDIA Build",
+  "elapsed": 5.002579689025879,
+  "response": {
+    "issues": [
+      {
+        "type": "small_target",
+        "severity": "minor",
+        "box": [
+          0.05,
+          0.46,
+          0.27,
+          0.515
+        ],
+        "description": "Text \"Tiny label text here\" is estimated at 8.2px, below the 12px readability floor.",
+        "affected_users": "Users with low vision, older users, and anyone at arm's length from a phone.",
+        "fix": "Increase font size to at least 12-14 CSS px.",
+        "confidence": 1.0
+      }
+    ],
+    "alt_texts": [],
+    "screen_reader_script": []
+  }
+}
