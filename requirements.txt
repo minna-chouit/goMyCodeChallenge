@@ -2,6 +2,7 @@ streamlit
 Pillow
 numpy
 rapidocr-onnxruntime
+opencv-python-headless
 openai
 pydantic
 gTTS
