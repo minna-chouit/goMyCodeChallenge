@@ -47,6 +47,7 @@ SYSTEM_PROMPT = (
 _MAX_IMAGE_SIDE = 1280
 _AI_TIMEOUT_SECONDS = 40
 _AI_MAX_TOKENS = 1500
+_OVERLOAD_RETRY_DELAY = 3
 
 
 def resize_for_ai(image, max_side=_MAX_IMAGE_SIDE):
@@ -144,7 +145,7 @@ def _measured_only_response():
     return AIResponse(
         issues=[],
         alt_texts=[],
-        screen_reader_script=["AI took too long; showing measured checks only."],
+        screen_reader_script=["AI analysis is unavailable right now; showing measured checks only."],
     )
 
 
@@ -185,6 +186,8 @@ def short_error_reason(exc):
     text = f"{type(exc).__name__} {exc}".lower()
     if "timeout" in text or "timed out" in text:
         return "timed out"
+    if "503" in text or "unavailable" in text or "high demand" in text or "overloaded" in text:
+        return "overloaded"
     if "429" in text or "rate" in text or "quota" in text:
         return "rate-limited"
     if "404" in text or "not found" in text or "not_found" in text:
@@ -213,8 +216,17 @@ def analyze_with_ai(image, deterministic_findings, env=None):
 
     for name, base_url, key, model in providers:
         start = time.time()
-        try:
-            result = _call_provider(base_url, key, model, image, deterministic_findings)
+        for attempt in range(2):
+            try:
+                result = _call_provider(base_url, key, model, image, deterministic_findings)
+            except Exception as e:
+                reason = short_error_reason(e)
+                logger.warning("%s failed (%s): %s", name, reason, e)
+                if reason == "overloaded" and attempt == 0:
+                    time.sleep(_OVERLOAD_RETRY_DELAY)
+                    continue
+                failures.append((name, reason))
+                break
             fallback_note = None
             if failures:
                 first_name, first_reason = failures[0]
@@ -222,22 +234,15 @@ def analyze_with_ai(image, deterministic_findings, env=None):
             outcome = (result, name, time.time() - start, fallback_note)
             _AI_CACHE.set(cache_key, outcome)
             return outcome
-        except Exception as e:
-            reason = short_error_reason(e)
-            logger.warning("%s failed (%s): %s", name, reason, e)
-            failures.append((name, reason))
-            continue
 
     start = time.time()
-    all_timed_out = bool(failures) and all(reason == "timed out" for _, reason in failures)
-    if all_timed_out:
-        fallback_note = "AI took too long; showing measured checks only"
-        outcome = (_measured_only_response(), "Measured checks only (AI timed out)", time.time() - start, fallback_note)
-    else:
-        fallback_note = None
-        if failures:
-            first_name, first_reason = failures[0]
-            fallback_note = f"{first_name} {first_reason}, used offline mock"
-        outcome = (_mock_response(image), "MOCK - AI unavailable", time.time() - start, fallback_note)
-    _AI_CACHE.set(cache_key, outcome)
-    return outcome
+    if not providers:
+        return _mock_response(image), "MOCK - AI unavailable", time.time() - start, None
+
+    # Failed outcomes are deliberately not cached, so a retry can succeed.
+    if all(reason == "timed out" for _, reason in failures):
+        return (_measured_only_response(), "Measured checks only (AI timed out)", time.time() - start,
+                "AI took too long; showing measured checks only")
+    detail = ", ".join(f"{n} {r}" for n, r in failures)
+    note = f"AI is busy or unavailable right now ({detail}); showing measured checks only. Try again in a minute."
+    return _measured_only_response(), "Measured checks only (AI unavailable)", time.time() - start, note
